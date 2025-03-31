@@ -11,7 +11,7 @@ st.markdown(
     """
     <style>
     .device-screen {
-        color: limegreen;
+        color: grey;
         font-family: 'Courier New', monospace;
         padding: 10px;
         border-radius: 10px;
@@ -80,7 +80,7 @@ with col1:
     elif 60 <= st.session_state.pressure_setting < 70:
         pressure_color = "yellow"
     else:
-        pressure_color = "green"
+        pressure_color = "blue"
     
     st.markdown(f"<div class='device-screen' style='background-color:{pressure_color};'>Measured Pressure: {st.session_state.pressure_setting} mmHg</div>", unsafe_allow_html=True)
 
@@ -100,12 +100,12 @@ with col2:
     elif 34 <= st.session_state.temperature_setting < 35:
         temperature_color = "yellow"
     else:
-        temperature_color = "green"
+        temperature_color = "blue"
     
     st.markdown(f"<div class='device-screen' style='background-color:{temperature_color};'>Measured Temperature: {st.session_state.temperature_setting} °C</div>", unsafe_allow_html=True)
 
 # Oxygen consumption and urine flow rate are only measured
-oxygen_consumption = 250  # Simulated fixed measurement
+oxygen_consumption = 250  # Simulated fixed measurement will be adjusted 
 st.markdown(f'<div class="device-screen">Measured Oxygen Consumption: {oxygen_consumption} mL/min</div>', unsafe_allow_html=True)
 
 urine_flow_rate = 50  # Simulated fixed measurement
