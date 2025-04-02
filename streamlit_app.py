@@ -38,7 +38,7 @@ st.markdown("""
 st.title("PreservaLife")
 
 # --- Pressure Adjustment ---
-st.markdown("###Pressure (mmHg)")
+st.markdown("### Pressure (mmHg)")
 col1_minus, col1_plus = st.columns([1, 1])
 with col1_minus:
     if st.button("➖", key="pressure_minus"):
