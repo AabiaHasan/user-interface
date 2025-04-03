@@ -1,4 +1,7 @@
 import streamlit as st
+import pandas as pd
+import altair as alt
+from datetime import datetime
 
 # --- Fixed Simulated Values ---
 RBF = 400  # mL/min
@@ -17,18 +20,36 @@ def calc_OC(Hb, SO2, pO2):
 AOC = calc_OC(Hb, SO2_a, pO2_a)
 RVOC = calc_OC(Hb, SO2_v, pO2_v)
 VO2ren = RBF * (AOC - RVOC)
+oxygen_content_avg = (AOC + RVOC) / 2
 
-# Initialize session state
+# --- Session State Initialization ---
 if 'pressure_setting' not in st.session_state:
     st.session_state.pressure_setting = 100
 if 'temperature_setting' not in st.session_state:
     st.session_state.temperature_setting = 37
+if 'vo2ren_history' not in st.session_state:
+    st.session_state.vo2ren_history = []
+if 'oc_history' not in st.session_state:
+    st.session_state.oc_history = []
+if 'time_history' not in st.session_state:
+    st.session_state.time_history = []
 
-# --- Layout Start ---
+# --- Update Historical Values ---
+current_time = datetime.now().strftime('%H:%M:%S')
+st.session_state.vo2ren_history.append(VO2ren)
+st.session_state.oc_history.append(oxygen_content_avg)
+st.session_state.time_history.append(current_time)
+
+# --- Limit to Last 20 Entries ---
+max_points = 20
+st.session_state.vo2ren_history = st.session_state.vo2ren_history[-max_points:]
+st.session_state.oc_history = st.session_state.oc_history[-max_points:]
+st.session_state.time_history = st.session_state.time_history[-max_points:]
+
+# --- Page Config & Styling ---
 st.set_page_config(layout="wide")
-st.markdown("<h1 style='color:#FFFFFF;'>PreservaLife Kidney Monitoring UI</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='color:#FFFFFF;'>PreservaLife</h1>", unsafe_allow_html=True)
 
-# --- Styles ---
 st.markdown("""
     <style>
     body {
@@ -72,17 +93,18 @@ left, center, right = st.columns([1, 2, 1])
 
 # --- LEFT COLUMN: BLOOD PARAMETERS ---
 with left:
-    st.markdown(f"<div class='circle' style='background-color:#39CCCC;'>RBF<br>{RBF} mL/min</div>", unsafe_allow_html=True)  # New color
-    st.markdown(f"<div class='circle' style='background-color:#FF851B;'>SO₂: {SO2_a}%<br>PO₂: {pO2_a} mmHg</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='circle' style='background-color:#39CCCC;'>RBF<br>{RBF} mL/min</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='circle' style='background-color:#FF69B4;'>SO₂<br>{SO2_a}%</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='circle' style='background-color:#FF851B;'>PO₂<br>{pO2_a} mmHg</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='circle' style='background-color:#2ECC40;'>Hct<br>{Hct}%</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='circle' style='background-color:#B10DC9;'>Hb<br>{Hb} g/dL</div>", unsafe_allow_html=True)
 
-# --- CENTER COLUMN: MEASUREMENTS & CONTROLS ---
+# --- CENTER COLUMN: METRICS + CONTROLS + CHARTS ---
 with center:
     st.markdown(f"<div class='device-screen'>VO₂ren: {VO2ren:.2f} mL/min</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='device-screen'>OC: {((AOC + RVOC)/2):.2f} mL O₂/dL</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='device-screen'>Oxygen Content: {oxygen_content_avg:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
 
-    # Temperature
+    # --- Temperature Controls ---
     st.markdown("#### <span style='color:white'>Temperature (°C)</span>", unsafe_allow_html=True)
     col_tm, col_tp = st.columns([1, 1])
     with col_tm:
@@ -96,7 +118,7 @@ with center:
     temp_color = "#0074D9" if 35 <= temperature <= 38 else "#F7E72A" if temperature < 35 else "#FF6B6B"
     st.markdown(f"<div class='device-screen' style='background-color:{temp_color};'>Temperature: {temperature} °C</div>", unsafe_allow_html=True)
 
-    # Pressure
+    # --- Pressure Controls ---
     st.markdown("#### <span style='color:white'>Pressure (mmHg)</span>", unsafe_allow_html=True)
     col_pm, col_pp = st.columns([1, 1])
     with col_pm:
@@ -110,6 +132,33 @@ with center:
     press_color = "#0074D9" if 70 <= pressure <= 100 else "#F7E72A" if 60 <= pressure < 70 else "#FF6B6B"
     st.markdown(f"<div class='device-screen' style='background-color:{press_color};'>Pressure: {pressure} mmHg</div>", unsafe_allow_html=True)
 
+    # --- Charts below pressure ---
+    st.markdown("### <span style='color:white'>📈 VO₂ren & Oxygen Content Trends</span>", unsafe_allow_html=True)
+
+    # VO₂ren Chart
+    vo2ren_df = pd.DataFrame({
+        'Time': st.session_state.time_history,
+        'VO₂ren (mL/min)': st.session_state.vo2ren_history
+    })
+    vo2ren_chart = alt.Chart(vo2ren_df).mark_line(point=True).encode(
+        x='Time',
+        y=alt.Y('VO₂ren (mL/min)', title='VO₂ren (mL/min)'),
+        tooltip=['Time', 'VO₂ren (mL/min)']
+    ).properties(height=300)
+    st.altair_chart(vo2ren_chart, use_container_width=True)
+
+    # Oxygen Content Chart
+    oc_df = pd.DataFrame({
+        'Time': st.session_state.time_history,
+        'Oxygen Content (mL O₂/dL)': st.session_state.oc_history
+    })
+    oc_chart = alt.Chart(oc_df).mark_line(point=True).encode(
+        x='Time',
+        y=alt.Y('Oxygen Content (mL O₂/dL)', title='Oxygen Content (mL O₂/dL)'),
+        tooltip=['Time', 'Oxygen Content (mL O₂/dL)']
+    ).properties(height=300)
+    st.altair_chart(oc_chart, use_container_width=True)
+
 # --- RIGHT COLUMN: SYSTEM STATUS ---
 with right:
     st.markdown(f"<div class='device-screen'>AOC: {AOC:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
@@ -119,7 +168,7 @@ with right:
     if st.button("⚠️ Emergency Stop"):
         st.error("⚠️ Emergency Stop Activated!")
 
-# --- FOOTER AREA: EXPORT + LEGEND ---
+# --- FOOTER AREA ---
 st.divider()
 col_exp, col_legend1, col_legend2, col_legend3 = st.columns([2, 1, 1, 1])
 with col_exp:
