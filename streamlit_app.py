@@ -173,26 +173,34 @@ with right:
 st.divider()
 col_exp, col_legend1, col_legend2, col_legend3 = st.columns([2, 1, 1, 1])
 with col_exp:
-    # Prepare DataFrame
+    # Export Button
     export_df = pd.DataFrame({
         'Time': st.session_state.time_history,
         'VO₂ren (mL/min)': st.session_state.vo2ren_history,
         'Oxygen Content (mL O₂/dL)': st.session_state.oc_history
     })
 
-    # Convert to Excel
     excel_buffer = io.BytesIO()
-    with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
         export_df.to_excel(writer, index=False, sheet_name='Oxygen Metrics')
     excel_buffer.seek(0)
 
-    # Download Button
     st.download_button(
         label="📤 Export to Excel",
         data=excel_buffer,
         file_name="oxygen_metrics.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+    # Import Button
+    uploaded_file = st.file_uploader("📥 Import Excel", type=["xlsx"])
+    if uploaded_file:
+        try:
+            imported_df = pd.read_excel(uploaded_file)
+            st.success("✅ Excel file loaded successfully!")
+            st.dataframe(imported_df)
+        except Exception as e:
+            st.error(f"❌ Failed to load Excel file: {e}")
 
 with col_legend1:
     st.markdown("<div class='device-screen' style='background-color:#FF6B6B;'>Red: Critical</div>", unsafe_allow_html=True)
