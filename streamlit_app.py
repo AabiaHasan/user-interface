@@ -49,19 +49,19 @@ st.session_state.time_history = st.session_state.time_history[-max_points:]
 
 # --- Page Config & Styling ---
 st.set_page_config(layout="wide")
-st.markdown("<h1 style='color:#FFFFFF;'>PreservaLife</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='color:#212529;'>PreservaLife</h1>", unsafe_allow_html=True)
 
 st.markdown("""
     <style>
     body {
-        background-color: black;
+        background-color: #f8f9fa;
     }
     .stApp {
-        background-color: black;
+        background-color: #f8f9fa;
     }
     .device-screen {
-        background-color: #111111;
-        color: white;
+        background-color: #ffffff;
+        color: #212529;
         font-family: monospace;
         padding: 14px;
         border-radius: 10px;
@@ -69,6 +69,7 @@ st.markdown("""
         font-size: 18px;
         font-weight: bold;
         margin-bottom: 12px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.05);
     }
     .circle {
         width: 120px;
@@ -79,12 +80,18 @@ st.markdown("""
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        color: white;
+        color: #212529;
         margin: 20px auto;
         padding: 10px;
         text-align: center;
         font-size: 15px;
         line-height: 1.3;
+        box-shadow: 0 0 6px rgba(0,0,0,0.1);
+    }
+    button[kind="secondary"] {
+        background-color: white !important;
+        color: black !important;
+        border: 1px solid #ccc !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -106,7 +113,7 @@ with center:
     st.markdown(f"<div class='device-screen'>Oxygen Content: {oxygen_content_avg:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
 
     # --- Temperature Controls ---
-    st.markdown("#### <span style='color:white'>Temperature (°C)</span>", unsafe_allow_html=True)
+    st.markdown("#### <span style='color:#212529'>Temperature (°C)</span>", unsafe_allow_html=True)
     col_tm, col_tp = st.columns([1, 1])
     with col_tm:
         if st.button("➖", key="temp_minus"):
@@ -116,11 +123,11 @@ with center:
             st.session_state.temperature_setting = min(45, st.session_state.temperature_setting + 1)
 
     temperature = st.session_state.temperature_setting
-    temp_color = "#0074D9" if 35 <= temperature <= 38 else "#F7E72A" if temperature < 35 else "#FF6B6B"
+    temp_color = "#66B2FF" if 35 <= temperature <= 38 else "#D4AF37" if temperature < 35 else "#FF6B6B"
     st.markdown(f"<div class='device-screen' style='background-color:{temp_color};'>Temperature: {temperature} °C</div>", unsafe_allow_html=True)
 
     # --- Pressure Controls ---
-    st.markdown("#### <span style='color:white'>Pressure (mmHg)</span>", unsafe_allow_html=True)
+    st.markdown("#### <span style='color:#212529'>Pressure (mmHg)</span>", unsafe_allow_html=True)
     col_pm, col_pp = st.columns([1, 1])
     with col_pm:
         if st.button("➖", key="pressure_minus"):
@@ -130,11 +137,11 @@ with center:
             st.session_state.pressure_setting = min(200, st.session_state.pressure_setting + 1)
 
     pressure = st.session_state.pressure_setting
-    press_color = "#0074D9" if 70 <= pressure <= 100 else "#F7E72A" if 60 <= pressure < 70 else "#FF6B6B"
+    press_color = "#66B2FF" if 70 <= pressure <= 100 else "#D4AF37" if 60 <= pressure < 70 else "#FF6B6B"
     st.markdown(f"<div class='device-screen' style='background-color:{press_color};'>Pressure: {pressure} mmHg</div>", unsafe_allow_html=True)
 
     # --- Charts below pressure ---
-    st.markdown("### <span style='color:white'>📈 VO₂ren & Oxygen Content Trends</span>", unsafe_allow_html=True)
+    st.markdown("### <span style='color:#212529'>📈 VO₂ren & Oxygen Content Trends</span>", unsafe_allow_html=True)
 
     # VO₂ren Chart
     vo2ren_df = pd.DataFrame({
@@ -192,8 +199,9 @@ with col_exp:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    # Import Button
-    uploaded_file = st.file_uploader("📥 Import Excel", type=["xlsx"])
+    # Import Button with separate black label
+    st.markdown("📥 <span style='color:black;'>Import Excel</span>", unsafe_allow_html=True)
+    uploaded_file = st.file_uploader("", type=["xlsx"], label_visibility="collapsed")
     if uploaded_file:
         try:
             imported_df = pd.read_excel(uploaded_file)
@@ -205,6 +213,6 @@ with col_exp:
 with col_legend1:
     st.markdown("<div class='device-screen' style='background-color:#FF6B6B;'>Red: Critical</div>", unsafe_allow_html=True)
 with col_legend2:
-    st.markdown("<div class='device-screen' style='background-color:#F7E72A;'>Yellow: Warning</div>", unsafe_allow_html=True)
+    st.markdown("<div class='device-screen' style='background-color:#D4AF37;'>Yellow: Warning</div>", unsafe_allow_html=True)
 with col_legend3:
-    st.markdown("<div class='device-screen' style='background-color:#0074D9;'>Blue: Normal</div>", unsafe_allow_html=True)
+    st.markdown("<div class='device-screen' style='background-color:#66B2FF;'>Blue: Normal</div>", unsafe_allow_html=True)
