@@ -4,82 +4,79 @@ import altair as alt
 from datetime import datetime
 import io
 
-# Embedded layout labels from Layout.xlsx (flattened order)
+# --- Hardcoded labels from Layout.xlsx (42 entries) ---
 layout_flat = [
-    'Venous High Quality low end hemoglobin conc',
-    'Venous High Quality high end hemoglobin conc',
-    'Venous Medium Quality low end hemoglobin conc',
-    'Venous Medium Quality high end hemoglobin conc',
-    'Venous low Quality low end hemoglobin conc',
-    'Venous Low Quality high end hemoglobin conc',
-    'Arterial High quality low end oxygen sat',
-    'Arterial High quality high end oxygen sat',
-    'Arterial Medium quality low end oxygen sat',
-    'Arterial Medium quality high end oxygen sat',
-    'Arterial low quality low end oxygen sat',
-    'Arterial Low quality high end oxygen sat',
-    'Venous High Quality low end oxygen sat',
-    'Venous High Quality high end oxygen sat',
-    'Venous Medium Quality low end oxygen sat',
-    'Venous Medium Quality high end oxygen sat',
-    'Venous low Quality low end oxygen sat',
-    'Venous Low Quality high end oxygen sat',
-    'Arterial High quality  low end partial pressure',
-    'Arterial High quality  high end partial pressure',
-    'Arterial Medium quality  low end partial pressure',
-    'Arterial Medium quality  high end partial pressure',
-    'Arterial low quality  low end partial pressure',
-    'Arterial Low quality  high end partial pressure',
-    'Venous High Quality low end partial pressure',
-    'Venous High Quality high end partial pressure',
-    'Venous Medium Quality low end partial pressure',
-    'Venous Medium Quality high end partial pressure',
-    'Venous low Quality low end partial pressure',
-    'Venous Low Quality high end partial pressure',
-    'High quality low end flow rate',
-    'High quality high end flow rate',
-    'medium quality low end flow rate',
-    'medium quality high end flow rate',
-    'low quality low end flow rate',
-    'low quality high end flow rate'
+    "Arterial High quality low end hemoglobin conc",
+    "Arterial High quality high end hemoglobin conc",
+    "Arterial Medium quality low end hemoglobin conc",
+    "Arterial Medium quality high end hemoglobin conc",
+    "Arterial low quality low end hemoglobin conc",
+    "Arterial Low quality high end hemoglobin conc",
+    "Venous High Quality low end hemoglobin conc",
+    "Venous High Quality high end hemoglobin conc",
+    "Venous Medium Quality low end hemoglobin conc",
+    "Venous Medium Quality high end hemoglobin conc",
+    "Venous low Quality low end hemoglobin conc",
+    "Venous Low Quality high end hemoglobin conc",
+    "Arterial High quality low end oxygen sat",
+    "Arterial High quality high end oxygen sat",
+    "Arterial Medium quality low end oxygen sat",
+    "Arterial Medium quality high end oxygen sat",
+    "Arterial low quality low end oxygen sat",
+    "Arterial Low quality high end oxygen sat",
+    "Venous High Quality low end oxygen sat",
+    "Venous High Quality high end oxygen sat",
+    "Venous Medium Quality low end oxygen sat",
+    "Venous Medium Quality high end oxygen sat",
+    "Venous low Quality low end oxygen sat",
+    "Venous Low Quality high end oxygen sat",
+    "Arterial High quality  low end partial pressure",
+    "Arterial High quality  high end partial pressure",
+    "Arterial Medium quality  low end partial pressure",
+    "Arterial Medium quality  high end partial pressure",
+    "Arterial low quality  low end partial pressure",
+    "Arterial Low quality  high end partial pressure",
+    "Venous High Quality low end partial pressure",
+    "Venous High Quality high end partial pressure",
+    "Venous Medium Quality low end partial pressure",
+    "Venous Medium Quality high end partial pressure",
+    "Venous low Quality low end partial pressure",
+    "Venous Low Quality high end partial pressure",
+    "High quality low end flow rate",
+    "High quality high end flow rate",
+    "medium quality low end flow rate",
+    "medium quality high end flow rate",
+    "low quality low end flow rate",
+    "low quality high end flow rate"
 ]
 
 # --- Page Setup ---
 st.set_page_config(layout="wide")
 st.markdown("<h1 style='color:#212529;'>PreservaLife</h1>", unsafe_allow_html=True)
 
-# Upload UI
+# --- Upload UI ---
 st.sidebar.markdown("### Upload data.xlsx")
 uploaded_file = st.sidebar.file_uploader("Upload data.xlsx", type=["xlsx"])
 
-# Proceed only if file is uploaded
 if uploaded_file:
-    data_df = pd.read_excel(uploaded_file)
-    data_flat = data_df.stack().reset_index(drop=True)
+    # Expect 7 rows x 6 columns (A1:F7 layout)
+    df = pd.read_excel(uploaded_file, header=None)
+    if df.shape != (7, 6):
+        st.error(f"❌ File must be exactly 7 rows × 6 columns (A1:F7). Found: {df.shape}")
+        st.stop()
 
-    # Mapping: label → variable
-    label_to_var = {
-        "Arterial High quality high end hemoglobin conc": "Hb_a",
-        "Arterial High quality high end oxygen sat": "SO2_a",
-        "Arterial High quality  high end partial pressure": "pO2_a",
-        "Venous High Quality high end hemoglobin conc": "Hb_v",
-        "Venous High Quality high end oxygen sat": "SO2_v",
-        "Venous High Quality high end partial pressure": "pO2_v"
-    }
+    data_flat = df.values.flatten()
+    mapped_values = {label: value for label, value in zip(layout_flat, data_flat)}
 
-    var_index_map = {}
-    for label, var in label_to_var.items():
-        for i, layout_label in enumerate(layout_flat):
-            if layout_label.strip().lower() == label.strip().lower():
-                var_index_map[var] = i
-                break
+    # --- Extract values for calculation ---
+    Hb_a = mapped_values["Arterial High quality high end hemoglobin conc"]
+    SO2_a = mapped_values["Arterial High quality high end oxygen sat"]
+    pO2_a = mapped_values["Arterial High quality  high end partial pressure"]
 
-    Hb_a = data_flat[var_index_map["Hb_a"]]
-    SO2_a = data_flat[var_index_map["SO2_a"]]
-    pO2_a = data_flat[var_index_map["pO2_a"]]
-    Hb_v = data_flat[var_index_map["Hb_v"]]
-    SO2_v = data_flat[var_index_map["SO2_v"]]
-    pO2_v = data_flat[var_index_map["pO2_v"]]
+    Hb_v = mapped_values["Venous High Quality high end hemoglobin conc"]
+    SO2_v = mapped_values["Venous High Quality high end oxygen sat"]
+    pO2_v = mapped_values["Venous High Quality high end partial pressure"]
+
     RBF = 800
     Hct = 36
 
@@ -87,34 +84,31 @@ if uploaded_file:
     venous_oxygen = (1.34 * Hb_v * SO2_v) + (0.003 * pO2_v)
     oxygen_consumption = RBF * (arterial_oxygen - venous_oxygen)
 
-    # Session state setup
-    if 'pressure_setting' not in st.session_state:
-        st.session_state.pressure_setting = 100
-    if 'temperature_setting' not in st.session_state:
-        st.session_state.temperature_setting = 37
-    if 'vo2ren_history' not in st.session_state:
-        st.session_state.vo2ren_history = []
-    if 'oc_history' not in st.session_state:
-        st.session_state.oc_history = []
-    if 'time_history' not in st.session_state:
-        st.session_state.time_history = []
+    # --- Session State ---
+    for key, default in {
+        'pressure_setting': 100,
+        'temperature_setting': 37,
+        'vo2ren_history': [],
+        'oc_history': [],
+        'time_history': []
+    }.items():
+        if key not in st.session_state:
+            st.session_state[key] = default
 
-    current_time = datetime.now().strftime('%H:%M:%S')
+    now = datetime.now().strftime('%H:%M:%S')
     st.session_state.vo2ren_history.append(oxygen_consumption)
     st.session_state.oc_history.append((arterial_oxygen + venous_oxygen) / 2)
-    st.session_state.time_history.append(current_time)
+    st.session_state.time_history.append(now)
 
-    st.session_state.vo2ren_history = st.session_state.vo2ren_history[-20:]
-    st.session_state.oc_history = st.session_state.oc_history[-20:]
-    st.session_state.time_history = st.session_state.time_history[-20:]
+    # Keep last 20 points
+    for key in ['vo2ren_history', 'oc_history', 'time_history']:
+        st.session_state[key] = st.session_state[key][-20:]
 
-    # Styling
+    # --- UI Styling ---
     st.markdown("""
         <style>
-        body { background-color: #f8f9fa; }
-        .stApp { background-color: #f8f9fa; }
         .device-screen {
-            background-color: #ffffff;
+            background-color: #fff;
             color: #212529;
             font-family: monospace;
             padding: 14px;
@@ -142,15 +136,10 @@ if uploaded_file:
             line-height: 1.3;
             box-shadow: 0 0 6px rgba(0,0,0,0.1);
         }
-        button[kind="secondary"] {
-            background-color: white !important;
-            color: black !important;
-            border: 1px solid #ccc !important;
-        }
         </style>
     """, unsafe_allow_html=True)
 
-    # --- UI ---
+    # --- Layout Columns ---
     left, center, right = st.columns([1, 2, 1])
     with left:
         st.markdown(f"<div class='circle' style='background-color:#39CCCC;'>RBF<br>{RBF} mL/min</div>", unsafe_allow_html=True)
@@ -190,11 +179,13 @@ if uploaded_file:
         press_color = "#66B2FF" if 70 <= press <= 100 else "#D4AF37" if 60 <= press < 70 else "#FF6B6B"
         st.markdown(f"<div class='device-screen' style='background-color:{press_color};'>Pressure: {press} mmHg</div>", unsafe_allow_html=True)
 
+        # Charts
         st.markdown("### 📈 VO₂ren & Oxygen Content Trends")
-        df1 = pd.DataFrame({'Time': st.session_state.time_history, 'VO₂ren (mL/min)': st.session_state.vo2ren_history})
-        st.altair_chart(alt.Chart(df1).mark_line(point=True).encode(x='Time', y='VO₂ren (mL/min)', tooltip=['Time', 'VO₂ren (mL/min)']), use_container_width=True)
-        df2 = pd.DataFrame({'Time': st.session_state.time_history, 'Oxygen Content (mL O₂/dL)': st.session_state.oc_history})
-        st.altair_chart(alt.Chart(df2).mark_line(point=True).encode(x='Time', y='Oxygen Content (mL O₂/dL)', tooltip=['Time', 'Oxygen Content (mL O₂/dL)']), use_container_width=True)
+        df_vo2 = pd.DataFrame({'Time': st.session_state.time_history, 'VO₂ren (mL/min)': st.session_state.vo2ren_history})
+        st.altair_chart(alt.Chart(df_vo2).mark_line(point=True).encode(x='Time', y='VO₂ren (mL/min)', tooltip=['Time', 'VO₂ren (mL/min)']), use_container_width=True)
+
+        df_oc = pd.DataFrame({'Time': st.session_state.time_history, 'Oxygen Content (mL O₂/dL)': st.session_state.oc_history})
+        st.altair_chart(alt.Chart(df_oc).mark_line(point=True).encode(x='Time', y='Oxygen Content (mL O₂/dL)', tooltip=['Time', 'Oxygen Content (mL O₂/dL)']), use_container_width=True)
 
     with right:
         st.markdown(f"<div class='device-screen'>AOC: {arterial_oxygen:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
@@ -205,25 +196,16 @@ if uploaded_file:
 
     # --- Export Section ---
     st.divider()
-    col_exp, col_legend1, col_legend2, col_legend3 = st.columns([2, 1, 1, 1])
-    with col_exp:
-        export_df = pd.DataFrame({
-            'Time': st.session_state.time_history,
-            'VO₂ren (mL/min)': st.session_state.vo2ren_history,
-            'Oxygen Content (mL O₂/dL)': st.session_state.oc_history
-        })
-        buffer = io.BytesIO()
-        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-            export_df.to_excel(writer, index=False, sheet_name="Oxygen Metrics")
-        buffer.seek(0)
-        st.download_button("📤 Export to Excel", buffer, file_name="oxygen_metrics.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
-    with col_legend1:
-        st.markdown("<div class='device-screen' style='background-color:#FF6B6B;'>Red: Critical</div>", unsafe_allow_html=True)
-    with col_legend2:
-        st.markdown("<div class='device-screen' style='background-color:#D4AF37;'>Yellow: Warning</div>", unsafe_allow_html=True)
-    with col_legend3:
-        st.markdown("<div class='device-screen' style='background-color:#66B2FF;'>Blue: Normal</div>", unsafe_allow_html=True)
+    export_df = pd.DataFrame({
+        'Time': st.session_state.time_history,
+        'VO₂ren (mL/min)': st.session_state.vo2ren_history,
+        'Oxygen Content (mL O₂/dL)': st.session_state.oc_history
+    })
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        export_df.to_excel(writer, index=False, sheet_name="Oxygen Metrics")
+    buffer.seek(0)
+    st.download_button("📤 Export to Excel", buffer, file_name="oxygen_metrics.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 else:
-    st.info("📥 Upload a `data.xlsx` file (structured like Layout) to begin.")
+    st.info("📥 Upload a data.xlsx file (structured as 7x6, A1:F7) to begin.")
