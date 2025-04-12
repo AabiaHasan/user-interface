@@ -9,22 +9,22 @@ import random
 layout_flat = [
     "Arterial High quality low end hemoglobin conc", "Arterial High quality high end hemoglobin conc",
     "Arterial Medium quality low end hemoglobin conc", "Arterial Medium quality high end hemoglobin conc",
-    "Arterial low quality low end hemoglobin conc", "Arterial Low quality high end hemoglobin conc",
+    "Arterial Low quality low end hemoglobin conc", "Arterial Low quality high end hemoglobin conc",
     "Venous High Quality low end hemoglobin conc", "Venous High Quality high end hemoglobin conc",
     "Venous Medium Quality low end hemoglobin conc", "Venous Medium Quality high end hemoglobin conc",
-    "Venous low Quality low end hemoglobin conc", "Venous Low Quality high end hemoglobin conc",
+    "Venous Low Quality low end hemoglobin conc", "Venous Low Quality high end hemoglobin conc",
     "Arterial High quality low end oxygen sat", "Arterial High quality high end oxygen sat",
     "Arterial Medium quality low end oxygen sat", "Arterial Medium quality high end oxygen sat",
-    "Arterial low quality low end oxygen sat", "Arterial Low quality high end oxygen sat",
+    "Arterial Low quality low end oxygen sat", "Arterial Low quality high end oxygen sat",
     "Venous High Quality low end oxygen sat", "Venous High Quality high end oxygen sat",
     "Venous Medium Quality low end oxygen sat", "Venous Medium Quality high end oxygen sat",
-    "Venous low Quality low end oxygen sat", "Venous Low Quality high end oxygen sat",
-    "Arterial High quality  low end partial pressure", "Arterial High quality  high end partial pressure",
-    "Arterial Medium quality  low end partial pressure", "Arterial Medium quality  high end partial pressure",
-    "Arterial low quality  low end partial pressure", "Arterial Low quality  high end partial pressure",
+    "Venous Low Quality low end oxygen sat", "Venous Low Quality high end oxygen sat",
+    "Arterial High quality low end partial pressure", "Arterial High quality high end partial pressure",
+    "Arterial Medium quality low end partial pressure", "Arterial Medium quality high end partial pressure",
+    "Arterial Low quality low end partial pressure", "Arterial Low quality high end partial pressure",
     "Venous High Quality low end partial pressure", "Venous High Quality high end partial pressure",
     "Venous Medium Quality low end partial pressure", "Venous Medium Quality high end partial pressure",
-    "Venous low Quality low end partial pressure", "Venous Low Quality high end partial pressure",
+    "Venous Low Quality low end partial pressure", "Venous Low Quality high end partial pressure",
     "High quality low end flow rate", "High quality high end flow rate",
     "medium quality low end flow rate", "medium quality high end flow rate",
     "low quality low end flow rate", "low quality high end flow rate"
@@ -119,8 +119,8 @@ if uploaded_file:
                                   mapped_values["Arterial Low quality high end hemoglobin conc"])
             SO2_a = random.uniform(mapped_values["Arterial Low quality low end oxygen sat"],
                                    mapped_values["Arterial Low quality high end oxygen sat"])
-            pO2_a = random.uniform(mapped_values["Arterial Low quality  low end partial pressure"],
-                                   mapped_values["Arterial Low quality  high end partial pressure"])
+            pO2_a = random.uniform(mapped_values["Arterial Low quality low end partial pressure"],
+                                   mapped_values["Arterial Low quality high end partial pressure"])
 
             Hb_v = random.uniform(mapped_values["Venous Low Quality low end hemoglobin conc"],
                                   mapped_values["Venous Low Quality high end hemoglobin conc"])
