@@ -115,10 +115,10 @@ if uploaded_file:
 
         # 🔁 Button BELOW Oxygen Content
         if st.button("🔁 Generate Metrics"):
-            Hb_a = random.uniform(mapped_values["Arterial Low quality low end hemoglobin conc"],
-                                  mapped_values["Arterial Low quality high end hemoglobin conc"])
-            SO2_a = random.uniform(mapped_values["Arterial High quality low end oxygen sat"],
-                                   mapped_values["Arterial High quality high end oxygen sat"])
+            Hb_a = random.uniform(mapped_values["Arterial High quality low end hemoglobin conc"],
+                                  mapped_values["Arterial High quality high end hemoglobin conc"])
+            SO2_a = random.uniform(mapped_values["Arterial Medium quality low end oxygen sat"],
+                                   mapped_values["Arterial Medium quality high end oxygen sat"])
             pO2_a = random.uniform(mapped_values["Arterial Medium quality low end partial pressure"],
                                    mapped_values["Arterial Medium quality high end partial pressure"])
 
@@ -126,8 +126,8 @@ if uploaded_file:
                                   mapped_values["Venous High Quality high end hemoglobin conc"])
             SO2_v = random.uniform(mapped_values["Venous High Quality low end oxygen sat"],
                                    mapped_values["Venous High Quality high end oxygen sat"])
-            pO2_v = random.uniform(mapped_values["Venous Low Quality low end partial pressure"],
-                                   mapped_values["Venous Low Quality high end partial pressure"])
+            pO2_v = random.uniform(mapped_values["Venous Medium Quality low end partial pressure"],
+                                   mapped_values["Venous Medium Quality high end partial pressure"])
 
             arterial_oxygen = (1.34 * Hb_a * SO2_a) + (0.003 * pO2_a)
             venous_oxygen = (1.34 * Hb_v * SO2_v) + (0.003 * pO2_v)
