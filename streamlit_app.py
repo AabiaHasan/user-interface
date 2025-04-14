@@ -115,15 +115,15 @@ if uploaded_file:
 
         # 🔁 Button BELOW Oxygen Content
         if st.button("🔁 Generate Metrics"):
-            Hb_a = random.uniform(mapped_values["Arterial High quality low end hemoglobin conc"],
-                                  mapped_values["Arterial High quality high end hemoglobin conc"])
-            SO2_a = random.uniform(mapped_values["Arterial Low quality low end oxygen sat"],
-                                   mapped_values["Arterial Low quality high end oxygen sat"])
-            pO2_a = random.uniform(mapped_values["Arterial High quality low end partial pressure"],
-                                   mapped_values["Arterial High quality high end partial pressure"])
+            Hb_a = random.uniform(mapped_values["Arterial Medium quality low end hemoglobin conc"],
+                                  mapped_values["Arterial Medium quality high end hemoglobin conc"])
+            SO2_a = random.uniform(mapped_values["Arterial High quality low end oxygen sat"],
+                                   mapped_values["Arterial High quality high end oxygen sat"])
+            pO2_a = random.uniform(mapped_values["Arterial Medium quality low end partial pressure"],
+                                   mapped_values["Arterial Medium quality high end partial pressure"])
 
-            Hb_v = random.uniform(mapped_values["Venous Medium Quality low end hemoglobin conc"],
-                                  mapped_values["Venous Medium Quality high end hemoglobin conc"])
+            Hb_v = random.uniform(mapped_values["Venous High Quality low end hemoglobin conc"],
+                                  mapped_values["Venous High Quality high end hemoglobin conc"])
             SO2_v = random.uniform(mapped_values["Venous Low Quality low end oxygen sat"],
                                    mapped_values["Venous Low Quality high end oxygen sat"])
             pO2_v = random.uniform(mapped_values["Venous Medium Quality low end partial pressure"],
