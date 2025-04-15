@@ -48,7 +48,7 @@ if uploaded_file:
     data_flat = df.values.flatten()
     mapped_values = {label: value for label, value in zip(layout_flat, data_flat)}
 
-    RBF = 800
+    
     Hct = 36
 
     for key, default in {
@@ -65,6 +65,7 @@ if uploaded_file:
 
     metrics = st.session_state.metrics
     if metrics:
+        RBF = metrics["RBF"]
         Hb_a = metrics["Hb_a"]
         SO2_a = metrics["SO2_a"]
         pO2_a = metrics["pO2_a"]
@@ -103,7 +104,7 @@ if uploaded_file:
 
     with left:
         if metrics:
-            st.markdown(f"<div class='circle' style='background-color:#39CCCC;'>RBF<br>{RBF} mL/min</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='circle' style='background-color:#39CCCC;'>RBF<br>{round(RBF, 1)} mL/min</div>", unsafe_allow_html=True)
             st.markdown(f"<div class='circle' style='background-color:#FF69B4;'>SO₂<br>{round(SO2_a, 1)}</div>", unsafe_allow_html=True)
             st.markdown(f"<div class='circle' style='background-color:#FF851B;'>PO₂<br>{round(pO2_a, 1)} mmHg</div>", unsafe_allow_html=True)
             st.markdown(f"<div class='circle' style='background-color:#2ECC40;'>Hct<br>{Hct}%</div>", unsafe_allow_html=True)
@@ -116,6 +117,8 @@ if uploaded_file:
             st.markdown(f"<div class='device-screen'>Oxygen Content: {avg_o2:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
 
         if st.button("🔁 Generate Metrics"):
+            RBF = random.uniform(mapped_values["medium quality high end flow rate"],
+                                  mapped_values["medium quality low end flow rate"])                   
             Hb_a = random.uniform(mapped_values["Arterial Medium quality low end hemoglobin conc"],
                                   mapped_values["Arterial Medium quality high end hemoglobin conc"])
             SO2_a = random.uniform(mapped_values["Arterial Medium quality low end oxygen sat"],
@@ -135,6 +138,7 @@ if uploaded_file:
             oxygen_consumption = RBF * (arterial_oxygen - venous_oxygen)
 
             st.session_state.metrics = {
+                "RBF": RBF,
                 "Hb_a": Hb_a, "SO2_a": SO2_a, "pO2_a": pO2_a,
                 "Hb_v": Hb_v, "SO2_v": SO2_v, "pO2_v": pO2_v,
                 "arterial_oxygen": arterial_oxygen,
