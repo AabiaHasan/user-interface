@@ -49,7 +49,7 @@ if uploaded_file:
     mapped_values = {label: value for label, value in zip(layout_flat, data_flat)}
 
     
-    Hct = 36
+    Hct = 24
 
     for key, default in {
         'pressure_setting': 100,
