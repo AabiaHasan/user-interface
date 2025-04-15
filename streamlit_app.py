@@ -72,7 +72,6 @@ if uploaded_file:
         arterial_oxygen = metrics["arterial_oxygen"]
         venous_oxygen = metrics["venous_oxygen"]
         oxygen_consumption = metrics["oxygen_consumption"]
-        flow_rate = metrics["flow_rate"]
 
     # --- UI Styling ---
     st.markdown("""<style>
@@ -103,7 +102,6 @@ if uploaded_file:
     with left:
         if metrics:
             st.markdown(f"<div class='circle' style='background-color:#39CCCC;'>RBF<br>{RBF} mL/min</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='circle' style='background-color:#0074D9;'>Flow Rate<br>{round(flow_rate, 1)} mL/min</div>", unsafe_allow_html=True)
             st.markdown(f"<div class='circle' style='background-color:#FF69B4;'>SO₂<br>{round(SO2_a, 1)}</div>", unsafe_allow_html=True)
             st.markdown(f"<div class='circle' style='background-color:#FF851B;'>PO₂<br>{round(pO2_a, 1)} mmHg</div>", unsafe_allow_html=True)
             st.markdown(f"<div class='circle' style='background-color:#2ECC40;'>Hct<br>{Hct}%</div>", unsafe_allow_html=True)
@@ -115,6 +113,7 @@ if uploaded_file:
             avg_o2 = (arterial_oxygen + venous_oxygen) / 2
             st.markdown(f"<div class='device-screen'>Oxygen Content: {avg_o2:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
 
+        # 🔁 Button BELOW Oxygen Content
         if st.button("🔁 Generate Metrics"):
             Hb_a = random.uniform(mapped_values["Arterial Low quality low end hemoglobin conc"],
                                   mapped_values["Arterial Low quality high end hemoglobin conc"])
@@ -130,9 +129,6 @@ if uploaded_file:
             pO2_v = random.uniform(mapped_values["Venous Medium Quality low end partial pressure"],
                                    mapped_values["Venous Medium Quality high end partial pressure"])
 
-            flow_rate = random.uniform(mapped_values["High quality low end flow rate"],
-                                       mapped_values["High quality high end flow rate"])
-
             arterial_oxygen = (1.34 * Hb_a * SO2_a) + (0.003 * pO2_a)
             venous_oxygen = (1.34 * Hb_v * SO2_v) + (0.003 * pO2_v)
             oxygen_consumption = RBF * (arterial_oxygen - venous_oxygen)
@@ -142,8 +138,7 @@ if uploaded_file:
                 "Hb_v": Hb_v, "SO2_v": SO2_v, "pO2_v": pO2_v,
                 "arterial_oxygen": arterial_oxygen,
                 "venous_oxygen": venous_oxygen,
-                "oxygen_consumption": oxygen_consumption,
-                "flow_rate": flow_rate
+                "oxygen_consumption": oxygen_consumption
             }
 
             now = datetime.now().strftime('%H:%M:%S')
@@ -154,6 +149,7 @@ if uploaded_file:
             for key in ['vo2ren_history', 'oc_history', 'time_history']:
                 st.session_state[key] = st.session_state[key][-20:]
 
+        # Temp controls
         st.markdown("#### Temperature (°C)")
         col_tm, col_tp = st.columns([1, 1])
         with col_tm:
@@ -167,6 +163,7 @@ if uploaded_file:
         temp_color = "#66B2FF" if 35 <= temp <= 38 else "#D4AF37" if temp < 35 else "#FF6B6B"
         st.markdown(f"<div class='device-screen' style='background-color:{temp_color};'>Temperature: {temp} °C</div>", unsafe_allow_html=True)
 
+        # Pressure controls
         st.markdown("#### Pressure (mmHg)")
         col_pm, col_pp = st.columns([1, 1])
         with col_pm:
@@ -180,6 +177,7 @@ if uploaded_file:
         press_color = "#66B2FF" if 70 <= press <= 100 else "#D4AF37" if 60 <= press < 70 else "#FF6B6B"
         st.markdown(f"<div class='device-screen' style='background-color:{press_color};'>Pressure: {press} mmHg</div>", unsafe_allow_html=True)
 
+        # Trends
         st.markdown("### 📈 VO₂ren & Oxygen Content Trends")
         df_vo2 = pd.DataFrame({'Time': st.session_state.time_history, 'VO₂ren (mL/min)': st.session_state.vo2ren_history})
         st.altair_chart(alt.Chart(df_vo2).mark_line(point=True).encode(x='Time', y='VO₂ren (mL/min)'), use_container_width=True)
@@ -195,6 +193,7 @@ if uploaded_file:
         if st.button("⚠️ Emergency Stop"):
             st.error("⚠️ Emergency Stop Activated!")
 
+    # Legend
     st.markdown("### 🧭 Status Color Legend")
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -204,6 +203,7 @@ if uploaded_file:
     with col3:
         st.markdown("<div class='device-screen' style='background-color:#0074D9;'>Blue: Normal</div>", unsafe_allow_html=True)
 
+    # Export
     st.divider()
     export_df = pd.DataFrame({
         'Time': st.session_state.time_history,
