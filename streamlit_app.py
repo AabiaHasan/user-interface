@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import altair as alt
@@ -53,6 +54,7 @@ if uploaded_file:
     for key, default in {
         'pressure_setting': 100,
         'temperature_setting': 37,
+        'flow_setting': 800,
         'vo2ren_history': [],
         'oc_history': [],
         'time_history': [],
@@ -113,19 +115,18 @@ if uploaded_file:
             avg_o2 = (arterial_oxygen + venous_oxygen) / 2
             st.markdown(f"<div class='device-screen'>Oxygen Content: {avg_o2:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
 
-        # 🔁 Button BELOW Oxygen Content
         if st.button("🔁 Generate Metrics"):
-            Hb_a = random.uniform(mapped_values["Arterial Low quality low end hemoglobin conc"],
-                                  mapped_values["Arterial Low quality high end hemoglobin conc"])
+            Hb_a = random.uniform(mapped_values["Arterial Medium quality low end hemoglobin conc"],
+                                  mapped_values["Arterial Medium quality high end hemoglobin conc"])
             SO2_a = random.uniform(mapped_values["Arterial Medium quality low end oxygen sat"],
                                    mapped_values["Arterial Medium quality high end oxygen sat"])
             pO2_a = random.uniform(mapped_values["Arterial Medium quality low end partial pressure"],
                                    mapped_values["Arterial Medium quality high end partial pressure"])
 
-            Hb_v = random.uniform(mapped_values["Venous High Quality low end hemoglobin conc"],
-                                  mapped_values["Venous High Quality high end hemoglobin conc"])
-            SO2_v = random.uniform(mapped_values["Venous Low Quality low end oxygen sat"],
-                                   mapped_values["Venous Low Quality high end oxygen sat"])
+            Hb_v = random.uniform(mapped_values["Venous Medium Quality low end hemoglobin conc"],
+                                  mapped_values["Venous Medium Quality high end hemoglobin conc"])
+            SO2_v = random.uniform(mapped_values["Venous Medium Quality low end oxygen sat"],
+                                   mapped_values["Venous Medium Quality high end oxygen sat"])
             pO2_v = random.uniform(mapped_values["Venous Medium Quality low end partial pressure"],
                                    mapped_values["Venous Medium Quality high end partial pressure"])
 
@@ -163,19 +164,23 @@ if uploaded_file:
         temp_color = "#66B2FF" if 35 <= temp <= 38 else "#D4AF37" if temp < 35 else "#FF6B6B"
         st.markdown(f"<div class='device-screen' style='background-color:{temp_color};'>Temperature: {temp} °C</div>", unsafe_allow_html=True)
 
-        # Pressure controls
-        st.markdown("#### Pressure (mmHg)")
-        col_pm, col_pp = st.columns([1, 1])
-        with col_pm:
-            if st.button("➖", key="pressure_minus"):
-                st.session_state.pressure_setting = max(50, st.session_state.pressure_setting - 1)
-        with col_pp:
-            if st.button("➕", key="pressure_plus"):
-                st.session_state.pressure_setting = min(200, st.session_state.pressure_setting + 1)
+        # Flow controls
+        st.markdown("#### Flow (mL/min)")
+        col_fm, col_fp = st.columns([1, 1])
+        with col_fm:
+            if st.button("➖", key="flow_minus"):
+                st.session_state.flow_setting = max(10, st.session_state.flow_setting - 50)
+        with col_fp:
+            if st.button("➕", key="flow_plus"):
+                st.session_state.flow_setting = min(1500, st.session_state.flow_setting + 50)
 
-        press = st.session_state.pressure_setting
-        press_color = "#66B2FF" if 70 <= press <= 100 else "#D4AF37" if 60 <= press < 70 else "#FF6B6B"
-        st.markdown(f"<div class='device-screen' style='background-color:{press_color};'>Pressure: {press} mmHg</div>", unsafe_allow_html=True)
+        flow = st.session_state.flow_setting
+        flow_color = (
+            "#66B2FF" if 500 < flow <= 1500 else
+            "#D4AF37" if 200 < flow <= 500 else
+            "#FF6B6B"
+        )
+        st.markdown(f"<div class='device-screen' style='background-color:{flow_color};'>Flow: {flow} mL/min</div>", unsafe_allow_html=True)
 
         # Trends
         st.markdown("### 📈 VO₂ren & Oxygen Content Trends")
@@ -194,7 +199,7 @@ if uploaded_file:
             st.error("⚠️ Emergency Stop Activated!")
 
     # Legend
-    st.markdown("### 🧭 Status Color Legend")
+    st.markdown("###🧭 Status Color Legend")
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown("<div class='device-screen' style='background-color:#FF6B6B;'>Red: Critical</div>", unsafe_allow_html=True)
