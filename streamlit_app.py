@@ -203,7 +203,7 @@ if uploaded_file:
             st.error("⚠️ Emergency Stop Activated!")
 
     # Legend
-    st.markdown("###🧭 Status Color Legend")
+    st.markdown("### 🧭 Status Color Legend")
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown("<div class='device-screen' style='background-color:#FF6B6B;'>Red: Critical</div>", unsafe_allow_html=True)
