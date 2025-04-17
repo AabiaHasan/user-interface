@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import altair as alt
@@ -48,7 +47,6 @@ if uploaded_file:
     data_flat = df.values.flatten()
     mapped_values = {label: value for label, value in zip(layout_flat, data_flat)}
 
-    
     Hct = 24
 
     for key, default in {
@@ -56,25 +54,13 @@ if uploaded_file:
         'temperature_setting': 37,
         'flow_setting': 800,
         'vo2ren_history': [],
-        'oc_history': [],
+        'aoc_history': [],
+        'roc_history': [],
         'time_history': [],
         'metrics': None
     }.items():
         if key not in st.session_state:
             st.session_state[key] = default
-
-    metrics = st.session_state.metrics
-    if metrics:
-        RBF = metrics["RBF"]
-        Hb_a = metrics["Hb_a"]
-        SO2_a = metrics["SO2_a"]
-        pO2_a = metrics["pO2_a"]
-        Hb_v = metrics["Hb_v"]
-        SO2_v = metrics["SO2_v"]
-        pO2_v = metrics["pO2_v"]
-        arterial_oxygen = metrics["arterial_oxygen"]
-        venous_oxygen = metrics["venous_oxygen"]
-        oxygen_consumption = metrics["oxygen_consumption"]
 
     # --- UI Styling ---
     st.markdown("""<style>
@@ -99,131 +85,111 @@ if uploaded_file:
         }
     </style>""", unsafe_allow_html=True)
 
-    # --- Layout ---
-    left, center, right = st.columns([1, 2, 1])
+    # --- Generate Metrics Button ---
+    if st.button("🔁 Generate Metrics"):
+        RBF = random.uniform(mapped_values["medium quality high end flow rate"],
+                             mapped_values["medium quality low end flow rate"])
+        Hb_a = random.uniform(mapped_values["Arterial Medium quality low end hemoglobin conc"],
+                              mapped_values["Arterial Medium quality high end hemoglobin conc"])
+        SO2_a = random.uniform(mapped_values["Arterial Medium quality low end oxygen sat"],
+                               mapped_values["Arterial Medium quality high end oxygen sat"])
+        pO2_a = random.uniform(mapped_values["Arterial Medium quality low end partial pressure"],
+                               mapped_values["Arterial Medium quality high end partial pressure"])
 
-    with left:
-        if metrics:
-            st.markdown(f"<div class='circle' style='background-color:#39CCCC;'>RBF<br>{round(RBF, 1)} mL/min</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='circle' style='background-color:#FF69B4;'>SO₂<br>{round(SO2_a, 1)}</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='circle' style='background-color:#FF851B;'>PO₂<br>{round(pO2_a, 1)} mmHg</div>", unsafe_allow_html=True)
+        Hb_v = random.uniform(mapped_values["Venous Medium Quality low end hemoglobin conc"],
+                              mapped_values["Venous Medium Quality high end hemoglobin conc"])
+        SO2_v = random.uniform(mapped_values["Venous Medium Quality low end oxygen sat"],
+                               mapped_values["Venous Medium Quality high end oxygen sat"])
+        pO2_v = random.uniform(mapped_values["Venous Medium Quality low end partial pressure"],
+                               mapped_values["Venous Medium Quality high end partial pressure"])
+
+        RBF = round(RBF, 2)
+        arterial_oxygen = round((1.34 * Hb_a * SO2_a) + (0.003 * pO2_a), 2)
+        venous_oxygen = round((1.34 * Hb_v * SO2_v) + (0.003 * pO2_v), 2)
+        oxygen_consumption = round(RBF * (arterial_oxygen - venous_oxygen), 2)
+
+        st.session_state.metrics = {
+            "RBF": RBF,
+            "Hb_a": Hb_a, "SO2_a": SO2_a, "pO2_a": pO2_a,
+            "Hb_v": Hb_v, "SO2_v": SO2_v, "pO2_v": pO2_v,
+            "arterial_oxygen": arterial_oxygen,
+            "venous_oxygen": venous_oxygen,
+            "oxygen_consumption": oxygen_consumption
+        }
+
+        now = datetime.now().strftime('%H:%M:%S')
+        st.session_state.vo2ren_history.append(oxygen_consumption)
+        st.session_state.aoc_history.append(arterial_oxygen)
+        st.session_state.roc_history.append(venous_oxygen)
+        st.session_state.time_history.append(now)
+
+        for key in ['vo2ren_history', 'aoc_history', 'roc_history', 'time_history']:
+            st.session_state[key] = st.session_state[key][-20:]
+
+    # --- Metrics Display ---
+    metrics = st.session_state.metrics
+    if metrics:
+        RBF = metrics["RBF"]
+        Hb_a = metrics["Hb_a"]
+        SO2_a = metrics["SO2_a"]
+        pO2_a = metrics["pO2_a"]
+        Hb_v = metrics["Hb_v"]
+        SO2_v = metrics["SO2_v"]
+        pO2_v = metrics["pO2_v"]
+        arterial_oxygen = metrics["arterial_oxygen"]
+        venous_oxygen = metrics["venous_oxygen"]
+        oxygen_consumption = metrics["oxygen_consumption"]
+
+        left, center, right = st.columns([1, 2, 1])
+
+        with left:
+            st.markdown(f"<div class='circle' style='background-color:#39CCCC;'>RBF<br>{RBF:.2f} mL/min</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='circle' style='background-color:#FF69B4;'>SO₂<br>{SO2_a:.2f}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='circle' style='background-color:#FF851B;'>PO₂<br>{pO2_a:.2f} mmHg</div>", unsafe_allow_html=True)
             st.markdown(f"<div class='circle' style='background-color:#2ECC40;'>Hct<br>{Hct}%</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='circle' style='background-color:#B10DC9;'>Hb<br>{round(Hb_a, 1)} g/dL</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='circle' style='background-color:#B10DC9;'>Hb<br>{Hb_a:.2f} g/dL</div>", unsafe_allow_html=True)
 
-    with center:
-        if metrics:
+        with center:
             st.markdown(f"<div class='device-screen'>VO₂ren: {oxygen_consumption:.2f} mL/min</div>", unsafe_allow_html=True)
-            avg_o2 = (arterial_oxygen + venous_oxygen) / 2
-            st.markdown(f"<div class='device-screen'>Oxygen Content: {avg_o2:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
 
-        if st.button("🔁 Generate Metrics"):
-            RBF = random.uniform(mapped_values["medium quality high end flow rate"],
-                                  mapped_values["medium quality low end flow rate"])                   
-            Hb_a = random.uniform(mapped_values["Arterial Medium quality low end hemoglobin conc"],
-                                  mapped_values["Arterial Medium quality high end hemoglobin conc"])
-            SO2_a = random.uniform(mapped_values["Arterial Medium quality low end oxygen sat"],
-                                   mapped_values["Arterial Medium quality high end oxygen sat"])
-            pO2_a = random.uniform(mapped_values["Arterial Medium quality low end partial pressure"],
-                                   mapped_values["Arterial Medium quality high end partial pressure"])
+            st.markdown("### 📈 VO₂ren, AOC & ROC Trends")
+            df_vo2 = pd.DataFrame({'Time': st.session_state.time_history, 'VO₂ren (mL/min)': st.session_state.vo2ren_history})
+            st.altair_chart(alt.Chart(df_vo2).mark_line(point=True).encode(x='Time', y='VO₂ren (mL/min)'), use_container_width=True)
 
-            Hb_v = random.uniform(mapped_values["Venous Medium Quality low end hemoglobin conc"],
-                                  mapped_values["Venous Medium Quality high end hemoglobin conc"])
-            SO2_v = random.uniform(mapped_values["Venous Medium Quality low end oxygen sat"],
-                                   mapped_values["Venous Medium Quality high end oxygen sat"])
-            pO2_v = random.uniform(mapped_values["Venous Medium Quality low end partial pressure"],
-                                   mapped_values["Venous Medium Quality high end partial pressure"])
+            df_aoc = pd.DataFrame({'Time': st.session_state.time_history, 'AOC (mL O₂/dL)': st.session_state.aoc_history})
+            st.altair_chart(alt.Chart(df_aoc).mark_line(point=True).encode(x='Time', y='AOC (mL O₂/dL)'), use_container_width=True)
 
-            arterial_oxygen = (1.34 * Hb_a * SO2_a) + (0.003 * pO2_a)
-            venous_oxygen = (1.34 * Hb_v * SO2_v) + (0.003 * pO2_v)
-            oxygen_consumption = RBF * (arterial_oxygen - venous_oxygen)
+            df_roc = pd.DataFrame({'Time': st.session_state.time_history, 'ROC (mL O₂/dL)': st.session_state.roc_history})
+            st.altair_chart(alt.Chart(df_roc).mark_line(point=True).encode(x='Time', y='ROC (mL O₂/dL)'), use_container_width=True)
 
-            st.session_state.metrics = {
-                "RBF": RBF,
-                "Hb_a": Hb_a, "SO2_a": SO2_a, "pO2_a": pO2_a,
-                "Hb_v": Hb_v, "SO2_v": SO2_v, "pO2_v": pO2_v,
-                "arterial_oxygen": arterial_oxygen,
-                "venous_oxygen": venous_oxygen,
-                "oxygen_consumption": oxygen_consumption
-            }
-
-            now = datetime.now().strftime('%H:%M:%S')
-            st.session_state.vo2ren_history.append(oxygen_consumption)
-            st.session_state.oc_history.append((arterial_oxygen + venous_oxygen) / 2)
-            st.session_state.time_history.append(now)
-
-            for key in ['vo2ren_history', 'oc_history', 'time_history']:
-                st.session_state[key] = st.session_state[key][-20:]
-
-        # Temp controls
-        st.markdown("#### Temperature (°C)")
-        col_tm, col_tp = st.columns([1, 1])
-        with col_tm:
-            if st.button("➖", key="temp_minus"):
-                st.session_state.temperature_setting = max(30, st.session_state.temperature_setting - 1)
-        with col_tp:
-            if st.button("➕", key="temp_plus"):
-                st.session_state.temperature_setting = min(45, st.session_state.temperature_setting + 1)
-
-        temp = st.session_state.temperature_setting
-        temp_color = "#66B2FF" if 35 <= temp <= 38 else "#D4AF37" if temp < 35 else "#FF6B6B"
-        st.markdown(f"<div class='device-screen' style='background-color:{temp_color};'>Temperature: {temp} °C</div>", unsafe_allow_html=True)
-
-        # Flow controls
-        st.markdown("#### Flow (mL/min)")
-        col_fm, col_fp = st.columns([1, 1])
-        with col_fm:
-            if st.button("➖", key="flow_minus"):
-                st.session_state.flow_setting = max(10, st.session_state.flow_setting - 50)
-        with col_fp:
-            if st.button("➕", key="flow_plus"):
-                st.session_state.flow_setting = min(1500, st.session_state.flow_setting + 50)
-
-        flow = st.session_state.flow_setting
-        flow_color = (
-            "#66B2FF" if 500 < flow <= 1500 else
-            "#D4AF37" if 200 < flow <= 500 else
-            "#FF6B6B"
-        )
-        st.markdown(f"<div class='device-screen' style='background-color:{flow_color};'>Flow: {flow} mL/min</div>", unsafe_allow_html=True)
-
-        # Trends
-        st.markdown("### 📈 VO₂ren & Oxygen Content Trends")
-        df_vo2 = pd.DataFrame({'Time': st.session_state.time_history, 'VO₂ren (mL/min)': st.session_state.vo2ren_history})
-        st.altair_chart(alt.Chart(df_vo2).mark_line(point=True).encode(x='Time', y='VO₂ren (mL/min)'), use_container_width=True)
-
-        df_oc = pd.DataFrame({'Time': st.session_state.time_history, 'Oxygen Content (mL O₂/dL)': st.session_state.oc_history})
-        st.altair_chart(alt.Chart(df_oc).mark_line(point=True).encode(x='Time', y='Oxygen Content (mL O₂/dL)'), use_container_width=True)
-
-    with right:
-        if metrics:
+        with right:
             st.markdown(f"<div class='device-screen'>AOC: {arterial_oxygen:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='device-screen'>RVOC: {venous_oxygen:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='device-screen'>Battery Life: 85%</div>", unsafe_allow_html=True)
-        if st.button("⚠️ Emergency Stop"):
-            st.error("⚠️ Emergency Stop Activated!")
+            st.markdown(f"<div class='device-screen'>ROC: {venous_oxygen:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='device-screen'>Battery Life: 85%</div>", unsafe_allow_html=True)
+            if st.button("⚠️ Emergency Stop"):
+                st.error("⚠️ Emergency Stop Activated!")
 
-    # Legend
-    st.markdown("### 🧭 Status Color Legend")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown("<div class='device-screen' style='background-color:#FF6B6B;'>Red: Critical</div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown("<div class='device-screen' style='background-color:#D4AF37;'>Yellow: Warning</div>", unsafe_allow_html=True)
-    with col3:
-        st.markdown("<div class='device-screen' style='background-color:#0074D9;'>Blue: Normal</div>", unsafe_allow_html=True)
+        st.markdown("### 🧭 Status Color Legend")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown("<div class='device-screen' style='background-color:#FF6B6B;'>Red: Critical</div>", unsafe_allow_html=True)
+        with col2:
+            st.markdown("<div class='device-screen' style='background-color:#D4AF37;'>Yellow: Warning</div>", unsafe_allow_html=True)
+        with col3:
+            st.markdown("<div class='device-screen' style='background-color:#0074D9;'>Blue: Normal</div>", unsafe_allow_html=True)
 
-    # Export
-    st.divider()
-    export_df = pd.DataFrame({
-        'Time': st.session_state.time_history,
-        'VO₂ren (mL/min)': st.session_state.vo2ren_history,
-        'Oxygen Content (mL O₂/dL)': st.session_state.oc_history
-    })
-    buffer = io.BytesIO()
-    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        export_df.to_excel(writer, index=False, sheet_name="Oxygen Metrics")
-    buffer.seek(0)
-    st.download_button("📤 Export to Excel", buffer, file_name="oxygen_metrics.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.divider()
+        export_df = pd.DataFrame({
+            'Time': st.session_state.time_history,
+            'VO₂ren (mL/min)': st.session_state.vo2ren_history,
+            'AOC (mL O₂/dL)': st.session_state.aoc_history,
+            'ROC (mL O₂/dL)': st.session_state.roc_history
+        })
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            export_df.to_excel(writer, index=False, sheet_name="Oxygen Metrics")
+        buffer.seek(0)
+        st.download_button("📤 Export to Excel", buffer, file_name="oxygen_metrics.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 else:
     st.info("📥 Upload a data.xlsx file (structured as 7x6, A1:F7) to begin.")
