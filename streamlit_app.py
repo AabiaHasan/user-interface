@@ -55,7 +55,7 @@ if uploaded_file:
         'flow_setting': 800,
         'vo2ren_history': [],
         'aoc_history': [],
-        'roc_history': [],
+        'rvoc_history': [],
         'time_history': [],
         'metrics': None
     }.items():
@@ -120,10 +120,10 @@ if uploaded_file:
         now = datetime.now().strftime('%H:%M:%S')
         st.session_state.vo2ren_history.append(oxygen_consumption)
         st.session_state.aoc_history.append(arterial_oxygen)
-        st.session_state.roc_history.append(venous_oxygen)
+        st.session_state.rvoc_history.append(venous_oxygen)
         st.session_state.time_history.append(now)
 
-        for key in ['vo2ren_history', 'aoc_history', 'roc_history', 'time_history']:
+        for key in ['vo2ren_history', 'aoc_history', 'rvoc_history', 'time_history']:
             st.session_state[key] = st.session_state[key][-20:]
 
     # --- Metrics Display ---
@@ -152,19 +152,19 @@ if uploaded_file:
         with center:
             st.markdown(f"<div class='device-screen'>VO₂ren: {oxygen_consumption:.2f} mL/min</div>", unsafe_allow_html=True)
 
-            st.markdown("### 📈 VO₂ren, AOC & ROC Trends")
+            st.markdown("### 📈 VO₂ren, AOC & RVOC Trends")
             df_vo2 = pd.DataFrame({'Time': st.session_state.time_history, 'VO₂ren (mL/min)': st.session_state.vo2ren_history})
             st.altair_chart(alt.Chart(df_vo2).mark_line(point=True).encode(x='Time', y='VO₂ren (mL/min)'), use_container_width=True)
 
             df_aoc = pd.DataFrame({'Time': st.session_state.time_history, 'AOC (mL O₂/dL)': st.session_state.aoc_history})
             st.altair_chart(alt.Chart(df_aoc).mark_line(point=True).encode(x='Time', y='AOC (mL O₂/dL)'), use_container_width=True)
 
-            df_roc = pd.DataFrame({'Time': st.session_state.time_history, 'ROC (mL O₂/dL)': st.session_state.roc_history})
-            st.altair_chart(alt.Chart(df_roc).mark_line(point=True).encode(x='Time', y='ROC (mL O₂/dL)'), use_container_width=True)
+            df_rvoc = pd.DataFrame({'Time': st.session_state.time_history, 'RVOC (mL O₂/dL)': st.session_state.rvoc_history})
+            st.altair_chart(alt.Chart(df_rvoc).mark_line(point=True).encode(x='Time', y='RVOC (mL O₂/dL)'), use_container_width=True)
 
         with right:
             st.markdown(f"<div class='device-screen'>AOC: {arterial_oxygen:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='device-screen'>ROC: {venous_oxygen:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='device-screen'>RVOC: {venous_oxygen:.2f} mL O₂/dL</div>", unsafe_allow_html=True)
             st.markdown(f"<div class='device-screen'>Battery Life: 85%</div>", unsafe_allow_html=True)
             if st.button("⚠️ Emergency Stop"):
                 st.error("⚠️ Emergency Stop Activated!")
@@ -183,7 +183,7 @@ if uploaded_file:
             'Time': st.session_state.time_history,
             'VO₂ren (mL/min)': st.session_state.vo2ren_history,
             'AOC (mL O₂/dL)': st.session_state.aoc_history,
-            'ROC (mL O₂/dL)': st.session_state.roc_history
+            'RVOC (mL O₂/dL)': st.session_state.rvoc_history
         })
         buffer = io.BytesIO()
         with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
