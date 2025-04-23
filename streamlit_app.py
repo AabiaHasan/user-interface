@@ -152,6 +152,39 @@ if uploaded_file:
         with center:
             st.markdown(f"<div class='device-screen'>VO₂ren: {oxygen_consumption:.2f} mL/min</div>", unsafe_allow_html=True)
 
+            # Temperature controls
+            st.markdown("#### Temperature (°C)")
+            col_tm, col_tp = st.columns([1, 1])
+            with col_tm:
+                if st.button("➖", key="temp_minus"):
+                    st.session_state.temperature_setting = max(30, st.session_state.temperature_setting - 1)
+            with col_tp:
+                if st.button("➕", key="temp_plus"):
+                    st.session_state.temperature_setting = min(45, st.session_state.temperature_setting + 1)
+
+            temp = st.session_state.temperature_setting
+            temp_color = "#66B2FF" if 35 <= temp <= 38 else "#D4AF37" if temp < 35 else "#FF6B6B"
+            st.markdown(f"<div class='device-screen' style='background-color:{temp_color};'>Temperature: {temp} °C</div>", unsafe_allow_html=True)
+
+            # Flow controls
+            st.markdown("#### Flow (mL/min)")
+            col_fm, col_fp = st.columns([1, 1])
+            with col_fm:
+                if st.button("➖", key="flow_minus"):
+                    st.session_state.flow_setting = max(10, st.session_state.flow_setting - 50)
+            with col_fp:
+                if st.button("➕", key="flow_plus"):
+                    st.session_state.flow_setting = min(1500, st.session_state.flow_setting + 50)
+
+            flow = st.session_state.flow_setting
+            flow_color = (
+                "#66B2FF" if 500 < flow <= 1500 else
+                "#D4AF37" if 200 < flow <= 500 else
+                "#FF6B6B"
+            )
+            st.markdown(f"<div class='device-screen' style='background-color:{flow_color};'>Flow: {flow} mL/min</div>", unsafe_allow_html=True)
+
+            # Trends
             st.markdown("### 📈 VO₂ren, AOC & RVOC Trends")
             df_vo2 = pd.DataFrame({'Time': st.session_state.time_history, 'VO₂ren (mL/min)': st.session_state.vo2ren_history})
             st.altair_chart(alt.Chart(df_vo2).mark_line(point=True).encode(x='Time', y='VO₂ren (mL/min)'), use_container_width=True)
